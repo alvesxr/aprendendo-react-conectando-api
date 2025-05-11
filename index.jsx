@@ -1,24 +1,25 @@
-import { useEffect, useState, useRef} from 'react'//react hooks
-import './style.css'
-import api from '../../services/api'
+import { useEffect, useState, useRef } from 'react';
+import './style.css';
+import api from '../../services/api';
 
-function Home() { //função sempre começa com letra maiuscula
+function Home() {
+  const [users, setUsers] = useState([]); // Estado para armazenar os usuários
 
-  const [users, setUsers] = useState([]) //useState é um hook do react que serve para criar variaveis de estado, o primeiro valor é o valor inicial e o segundo é a função que vai alterar esse valor
+  const inputName = useRef(); // Referências para os inputs
+  const inputAge = useRef();
+  const inputEmail = useRef();
 
-  const inputName = useRef() //useRef é um hook do react que serve para criar uma referencia a um elemento do DOM, nesse caso o input de nome
-  const inputAge = useRef() //useRef é um hook do react que serve para criar uma referencia a um elemento do DOM, nesse caso o input de idade
-  const inputEmail = useRef() //useRef é um hook do react que serve para criar uma referencia a um elemento do DOM, nesse caso o input de email
-
+  // Função para buscar usuários
   async function getUsers() {
-    const usersFromApi = await api.get('/usuarios')
-    setUsers(usersFromApi.data)
+    const usersFromApi = await api.get('/usuarios');
+    setUsers(usersFromApi.data);
   }
 
+  // Função para cadastrar usuários
   async function creatUsers() {
     try {
       const user = {
-        name: inputName.current.value, // Obtém o valor do input
+        name: inputName.current.value,
         age: inputAge.current.value,
         email: inputEmail.current.value,
       };
@@ -45,30 +46,55 @@ function Home() { //função sempre começa com letra maiuscula
     }
   }
 
-  useEffect(() => { //tudo que estiver dentro do useEffect vai ser executado quando o site carregar
-     getUsers()
-  }, [])
+  // Função para deletar usuários
+  async function deleteUsers(id_user) {
+    try {
+      await api.delete(`/usuarios/${id_user}`); // Faz a requisição para excluir o usuário
+      getUsers(); // Atualiza a lista de usuários após a exclusão
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
+      alert('Erro ao excluir usuário. Tente novamente.');
+    }
+  }
+
+  // Executa ao carregar o componente
+  useEffect(() => {
+    getUsers();
+  }, []);
 
   return (
     <div className="container">
       <form>
         <h1>Cadastro de Usuários</h1>
-          <input type="text" name="nome" placeholder='nome' ref={inputName}/>
-          <input type="number" name="idade" placeholder='idade' ref={inputAge}/>
-          <input type="email" name="email" placeholder='email' ref={inputEmail}/>
-        <button type="button" className="btn-cadastrar" onClick={creatUsers}>Cadastrar</button>
+        <input type="text" name="nome" placeholder="nome" ref={inputName} />
+        <input type="number" name="idade" placeholder="idade" ref={inputAge} />
+        <input type="email" name="email" placeholder="email" ref={inputEmail} />
+        <button type="button" className="btn-cadastrar" onClick={creatUsers}>
+          Cadastrar
+        </button>
       </form>
 
       {users.map((user) => (
         <div key={user.id_user} className="card">
-          <p>Nome: <span>{user.name}</span></p>
-          <p>Idade: <span>{user.age}</span></p>
-          <p>Email: <span>{user.email}</span></p>
-          <button className="btn-excluir">Excluir</button>
+          <p>
+            Nome: <span>{user.name}</span>
+          </p>
+          <p>
+            Idade: <span>{user.age}</span>
+          </p>
+          <p>
+            Email: <span>{user.email}</span>
+          </p>
+          <button
+            className="btn-excluir"
+            onClick={() => deleteUsers(user.id_user)}
+          >
+            Excluir
+          </button>
         </div>
       ))}
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;
